@@ -2,7 +2,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const cors = require("cors");
-const nodemailer = require("nodemailer");
+const { initializeMailer } = require("./mailer");
 require("dotenv").config();
 require("express-async-errors");
 
@@ -18,32 +18,39 @@ class APIService {
   }
 
   async initialize() {
-    if (this.forChildProcess) {
-      await this.connectDatabase();
-    } else {
-      this.setupMiddlewares();
-      await this.connectDatabase();
-      this.setupRoutes();
-      this.setupErrorHandling();
-    }
-    this.initializeMailer();
+    try {
+      if (this.forChildProcess) {
+        await this.connectDatabase();
+      } else {
+        this.setupMiddlewares();
+        await this.connectDatabase();
+        this.setupRoutes();
+        this.setupErrorHandling();
+      }
+      this.initializeMailer();
 
-    if (!this.database || !this.mailer) {
-      console.error('Error initializing database or mailer');
+      if (!this.database || !this.mailer) {
+        console.error("Error initializing database or mailer");
+        process.exit(1);
+      }
+    } catch (err) {
+      console.error("Error during initialization:", err);
       process.exit(1);
     }
   }
 
   setupMiddlewares() {
     if (!this.forChildProcess) {
-    this.app.use(cors());
-    this.app.use(bodyParser.json());
+      this.app.use(cors());
+      this.app.use(bodyParser.json());
     }
   }
 
   async connectDatabase() {
     try {
-      this.database = await mongoose.connect("mongodb://localhost:27017/db_auth");
+      this.database = await mongoose.connect(
+        "mongodb://localhost:27017/db_auth"
+      );
       console.log("Database connected Successfully");
     } catch (error) {
       console.error("Error connecting to the database:", error);
@@ -51,22 +58,28 @@ class APIService {
       process.exit(1);
     }
   }
-  
+
   initializeMailer() {
     // Initialize mailer for both server and child processes
-    this.mailer = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: "vasudeogaichor@gmail.com",
-        pass: `${process.env.GMAIL_APP_PASSWORD}`,
-      },
-    });
+    this.mailer = initializeMailer();
+    console.log("Mailer initialized successfully");
   }
 
   setupRoutes() {
-    this.app.use("/auth", authRouter);
-    this.app.use(verifyToken);
-    this.app.use("/posts", postRouter);
+    try {
+      this.logRouteSetup("/auth");
+      this.app.use("/auth", authRouter);
+      this.app.use(verifyToken);
+      this.logRouteSetup("/posts");
+      this.app.use("/posts", postRouter);
+    } catch (err) {
+      console.error("Error in routes setup:", err);
+      process.exit(1);
+    }
+  }
+
+  logRouteSetup(route) {
+    console.log(`Setup route: ${route}`);
   }
 
   setupErrorHandling() {
