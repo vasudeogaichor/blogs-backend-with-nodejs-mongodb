@@ -1,6 +1,4 @@
-const mailer = require("../mailer");
-const { promisify } = require('util')
-const sendMailAsync = promisify(mailer.sendMail).bind(mailer);
+const {sendMail} = require("../mailer");
 
 async function sendWelcomeMail(user) {
   try {
@@ -9,13 +7,12 @@ async function sendWelcomeMail(user) {
       from: "vasudeogaichor@gmail.com",
       to: user.email,
       subject: "Welcome to Blogs App",
-      text: `Dear <strong>${user.username}</strong>,\n\nWelcome to Your App! Thank you for registering.`,
+      html: `<p>Dear <strong>${user.username}</strong><p>,\n\nWelcome to Blogs App! Thank you for registering.`,
     };
 
     // Send the email
-    await sendMailAsync(mailOptions);
+    sendMail(mailOptions);
 
-    console.log("Welcome email sent successfully");
   } catch (error) {
     console.error("Error sending welcome email:", error);
     // Handle email sending error (e.g., log it, but don't propagate it)
