@@ -1,9 +1,9 @@
 // app.js
-const AppServices = require('./services/APIService');
+const APIService = require('./services/APIService');
 
-const appServices = new AppServices();
-appServices.initialize().then(() => {
-  appServices.startServer();
+const apiService = new APIService();
+apiService.initialize().then(() => {
+  apiService.startServer();
 });
 
-module.exports = appServices.app;
+module.exports = apiService.app;
