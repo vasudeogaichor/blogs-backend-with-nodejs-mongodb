@@ -15,4 +15,15 @@ function initializeMailer() {
 
 const mailer = initializeMailer();
 
-module.exports = { initializeMailer, mailer };
+function sendMail(mailOptions) {
+  mailer.sendMail(mailOptions, (error, info) => {
+    if (error) {
+      console.error("Error sending email:", error);
+      return { error };
+    } else {
+      console.log("Email sent:", info.response);
+    }
+  });
+}
+
+module.exports = { initializeMailer, mailer, sendMail };
