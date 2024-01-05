@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const { initializeMailer } = require("./mailer");
+const backgroundWorker = require('./worker')
 require("dotenv").config();
 require("express-async-errors");
 
@@ -26,6 +27,7 @@ class APIService {
         await this.connectDatabase();
         this.setupRoutes();
         this.setupErrorHandling();
+        this.initializeWorker();
       }
       this.initializeMailer();
 
@@ -88,6 +90,10 @@ class APIService {
       const stackTrace = err.stack.split("\n");
       res.status(500).json({ Error: stackTrace });
     });
+  }
+
+  initializeWorker() {
+    this.worker = backgroundWorker;
   }
 
   startServer() {

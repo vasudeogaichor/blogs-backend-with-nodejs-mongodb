@@ -1,6 +1,7 @@
 const User = require("../../models/User");
 const { isStrongPassword } = require("../../utils/password");
 const { createNewToken } = require("../../middleware/authMiddleware");
+const emailQueue = require('../../services/queues');
 
 module.exports = async function userRegister(req, res, next) {
   const { username, email, password } = req.body;
@@ -41,6 +42,7 @@ module.exports = async function userRegister(req, res, next) {
         token: token
       },
     });
+    await emailQueue.add('sendWelcomeEmail', { user: newUser });
   } catch (error) {
     console.error("Error during registration:", error);
     res.status(500).json({ Error: "Internal Server Error" });
