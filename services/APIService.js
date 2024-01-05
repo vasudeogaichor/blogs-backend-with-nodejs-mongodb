@@ -94,6 +94,7 @@ class APIService {
 
   initializeWorker() {
     this.worker = backgroundWorker;
+    console.log('Bull worker initialized successfully')
   }
 
   startServer() {
