@@ -4,7 +4,6 @@ require("dotenv").config();
 const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY
 
 function verifyToken(req, res, next) {
-  console.log('req - ', req.method, req.url)
   if (req.method === 'GET' && req.url === '/posts?') {
     return next(); // Skip token verification for GET /posts
   }
