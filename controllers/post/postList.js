@@ -53,7 +53,13 @@ module.exports = async function postList(req, res, next) {
         sortOptions.createdAt = -1;
       }
 
-    const posts = await Post.find(filters).skip(skip).limit(limit).sort(sortOptions);
+    const posts = await Post.find(filters)
+    .populate({
+      path: 'userId',
+      model: 'User',
+      select: 'id username'
+    })
+    .skip(skip).limit(limit).sort(sortOptions);
     const totalPosts = await Post.countDocuments();
 
     res.status(200).json({
@@ -63,7 +69,7 @@ module.exports = async function postList(req, res, next) {
       data: posts.map((post) => {
         return {
           id: post._id,
-          userId: post.userId,
+          user: post.userId,
           title: post.title,
           content: post.content,
           likes: post.likes,
