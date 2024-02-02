@@ -10,29 +10,29 @@ module.exports = async function validateUserToken(req, res, next) {
     }
 
     const token = authHeader.split(" ")[1];
-    jwt.verify(token, JWT_SECRET_KEY, (err, decoded) => {
+    jwt.verify(token, JWT_SECRET_KEY, async (err, decoded) => {
         if (err) {
             return res.status(401).json({ Error: "Unauthorized - Invalid token" });
         }
 
         req.user = decoded;
-    });
 
-    const loggedInUser = req.user;
+        const loggedInUser = req.user;
 
-    const user = await User.findOne({ _id: loggedInUser?.userId });
+        const user = await User.findOne({ _id: loggedInUser?.userId });
 
-    if (!user) {
-        return res.status(404).json({ Error: "Invalid token" });
-    }
-    else {
-        res.status(200).json({
-            data: {
-                userId: user._id,
-                username: user.username,
-                email: user.email,
-            },
-            message: "Token is valid",
-        })
-    }
+        if (!user) {
+            return res.status(404).json({ Error: "Invalid token" });
+        }
+        else {
+            res.status(200).json({
+                data: {
+                    userId: user._id,
+                    username: user.username,
+                    email: user.email,
+                },
+                message: "Token is valid",
+            })
+        }
+    })
 }
